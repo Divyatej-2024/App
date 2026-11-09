@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
 }
 
 private enum class Section(val label: String) {
-    HOME("Overview"), NETWORK("Network"), CHECKLISTS("Checklists"), NOTES("Work notes")
+    HOME("Overview"), NETWORK("Network"), CHECKLISTS("Checklists"), CASES("Guided case"), NOTES("Work notes")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +58,7 @@ private fun ToolkitApp() {
                 Section.HOME -> Overview(Modifier.padding(padding)) { section = it }
                 Section.NETWORK -> NetworkTools(Modifier.padding(padding))
                 Section.CHECKLISTS -> Checklists(Modifier.padding(padding))
-                Section.NOTES -> WorkNotes(Modifier.padding(padding))
+                Section.CASES -> GuidedCase(Modifier.padding(padding))\n                Section.NOTES -> WorkNotes(Modifier.padding(padding))
             }
         }
     }
@@ -73,7 +73,7 @@ private fun Overview(modifier: Modifier = Modifier, navigate: (Section) -> Unit)
         }
         item { SummaryCard("Network utilities", "Calculate IPv4 subnet details and review common service ports.", "Open network tools") { navigate(Section.NETWORK) } }
         item { SummaryCard("Support checklists", "Work through structured first-line troubleshooting steps.", "Open checklists") { navigate(Section.CHECKLISTS) } }
-        item { SummaryCard("Work notes", "Keep local notes for tasks, observations and handovers.", "Open notes") { navigate(Section.NOTES) } }
+        item { SummaryCard("Guided support case", "Turn a vague problem into clear checks, evidence and a useful handover.", "Start a case") { navigate(Section.CASES) } }\n        item { SummaryCard("Work notes", "Keep local notes for tasks, observations and handovers.", "Open notes") { navigate(Section.NOTES) } }
         item {
             Card {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
