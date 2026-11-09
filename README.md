@@ -11,7 +11,8 @@ The product voice should feel calm, practical and respectful. It should explain 
 ## Current MVP
 
 - Native Android interface built with Kotlin and Jetpack Compose.
-- IPv4 subnet calculator showing network, mask, broadcast, host range and host count.
+- IPv4 subnet calculator with common CIDR presets and explicit `/31` point-to-point and `/32` single-address handling.
+- Subnet calculator unit tests covering typical, boundary and invalid input cases.
 - Common service-port reference.
 - First-line troubleshooting checklists for connectivity, slow computers and sign-in problems.
 - Guided support case: capture the reported issue, business impact, checks, evidence and next action.
@@ -31,7 +32,7 @@ The application code, screen copy and workflow in this repository are being writ
 
 Requirements: Android Studio with Android SDK Platform 36 and JDK 17. Open this repository in Android Studio, allow Gradle sync, then run the app configuration on an Android 8.0 (API 26) or newer device/emulator.
 
-For a local debug build after Gradle is available, run `gradle assembleDebug`. The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
+Run unit tests with `gradle testDebugUnitTest`. For a local debug build after Gradle is available, run `gradle assembleDebug`. The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
 For Google Play, create a signed Android App Bundle (AAB) from Android Studio's **Build > Generate Signed Bundle / APK** workflow. Check the current Play Console target API, testing, privacy and Data safety requirements at submission time. Do not publish a debug build.
 
