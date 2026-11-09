@@ -58,7 +58,8 @@ private fun ToolkitApp() {
                 Section.HOME -> Overview(Modifier.padding(padding)) { section = it }
                 Section.NETWORK -> NetworkTools(Modifier.padding(padding))
                 Section.CHECKLISTS -> Checklists(Modifier.padding(padding))
-                Section.CASES -> GuidedCase(Modifier.padding(padding))\n                Section.NOTES -> WorkNotes(Modifier.padding(padding))
+                Section.CASES -> GuidedCase(Modifier.padding(padding))
+                Section.NOTES -> WorkNotes(Modifier.padding(padding))
             }
         }
     }
@@ -73,7 +74,8 @@ private fun Overview(modifier: Modifier = Modifier, navigate: (Section) -> Unit)
         }
         item { SummaryCard("Network utilities", "Calculate IPv4 subnet details and review common service ports.", "Open network tools") { navigate(Section.NETWORK) } }
         item { SummaryCard("Support checklists", "Work through structured first-line troubleshooting steps.", "Open checklists") { navigate(Section.CHECKLISTS) } }
-        item { SummaryCard("Guided support case", "Turn a vague problem into clear checks, evidence and a useful handover.", "Start a case") { navigate(Section.CASES) } }\n        item { SummaryCard("Work notes", "Keep local notes for tasks, observations and handovers.", "Open notes") { navigate(Section.NOTES) } }
+        item { SummaryCard("Guided support case", "Turn a vague problem into clear checks, evidence and a useful handover.", "Start a case") { navigate(Section.CASES) } }
+        item { SummaryCard("Work notes", "Keep local notes for tasks, observations and handovers.", "Open notes") { navigate(Section.NOTES) } }
         item {
             Card {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -200,6 +202,44 @@ private fun Checklists(modifier: Modifier = Modifier) {
             }
         }
         item { TextButton(onClick = { checked.indices.forEach { checked[it] = false } }) { Text("Reset checklist") } }
+    }
+}
+
+@Composable
+private fun GuidedCase(modifier: Modifier = Modifier) {
+    var issue by remember { mutableStateOf("Connectivity problem") }
+    var impact by remember { mutableStateOf("") }
+    var report by remember { mutableStateOf("") }
+    var checks by remember { mutableStateOf("") }
+    var nextAction by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val handover = """
+        SUPPORT HANDOVER
+        Issue: $issue
+        Impact: ${impact.ifBlank { "Not recorded" }}
+        User report: ${report.ifBlank { "Not recorded" }}
+        Checks and evidence: ${checks.ifBlank { "Not recorded" }}
+        Outcome / next action: ${nextAction.ifBlank { "Further investigation required" }}
+    """.trimIndent()
+
+    Column(modifier.fillMaxSize().padding(16.dp)) {
+        Text("Guided support case", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text("Work through the facts before deciding what the problem is. A clear handover saves the next person from starting again.")
+        Spacer(Modifier.height(12.dp))
+        OutlinedTextField(issue, { issue = it }, label = { Text("What are you investigating?") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(impact, { impact = it }, label = { Text("Who or what is affected?") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(report, { report = it }, label = { Text("What did the person actually report?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(checks, { checks = it }, label = { Text("What did you check, and what did you observe?") }, minLines = 3, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(nextAction, { nextAction = it }, label = { Text("What happened next, or what should happen next?") }, minLines = 2, modifier = Modifier.fillMaxWidth())
+        Spacer(Modifier.height(12.dp))
+        Text("Handover preview", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Card(Modifier.fillMaxWidth()) { Text(handover, modifier = Modifier.padding(12.dp)) }
+        Spacer(Modifier.height(8.dp))
+        Button(onClick = {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Support handover", handover))
+        }, modifier = Modifier.fillMaxWidth()) { Text("Copy handover summary") }
+        Text("Review the summary before sharing. Do not include passwords, verification codes or confidential details.", style = MaterialTheme.typography.bodySmall)
     }
 }
 
