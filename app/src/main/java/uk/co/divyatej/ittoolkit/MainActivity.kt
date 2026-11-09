@@ -107,7 +107,13 @@ private fun NetworkTools(modifier: Modifier = Modifier) {
         item {
             Text("IPv4 subnet calculator", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             OutlinedTextField(address, { address = it }, label = { Text("IPv4 address") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(prefix, { prefix = it }, label = { Text("Prefix length (0–32)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(prefix, { prefix = it.filter(Char::isDigit).take(2) }, label = { Text("Prefix length (0–32)") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+            Text("Common prefixes", style = MaterialTheme.typography.labelLarge)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("24", "25", "26", "27", "28", "30").forEach { value ->
+                    FilterChip(selected = prefix == value, onClick = { prefix = value }, label = { Text("/$value") })
+                }
+            }
             if (result == null) Text("Enter a valid IPv4 address and prefix length.", color = MaterialTheme.colorScheme.error)
             else Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -117,7 +123,16 @@ private fun NetworkTools(modifier: Modifier = Modifier) {
                     ResultRow("Broadcast", result.broadcast)
                     ResultRow("First host", result.firstHost)
                     ResultRow("Last host", result.lastHost)
-                    ResultRow("Usable hosts", result.hosts.toString())
+                    ResultRow(if (prefix == "31") "Addresses (/31)" else if (prefix == "32") "Single address (/32)" else "Usable hosts", result.hosts.toString())
+                    Text(
+                        when (prefix) {
+                            "31" -> "A /31 is commonly used for point-to-point links; both addresses are usable under RFC 3021."
+                            "32" -> "A /32 identifies one individual IPv4 address."
+                            else -> "Host count excludes network and broadcast addresses."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -137,9 +152,9 @@ private fun ResultRow(label: String, value: String) {
     }
 }
 
-private data class SubnetResult(val network: String, val mask: String, val broadcast: String, val firstHost: String, val lastHost: String, val hosts: Long)
+internal data class SubnetResult(val network: String, val mask: String, val broadcast: String, val firstHost: String, val lastHost: String, val hosts: Long)
 
-private fun calculateSubnet(ip: String, prefixText: String): SubnetResult? {
+internal fun calculateSubnet(ip: String, prefixText: String): SubnetResult? {
     val prefix = prefixText.toIntOrNull()?.takeIf { it in 0..32 } ?: return null
     val parts = ip.split(".")
     if (parts.size != 4 || parts.any { it.isEmpty() || (it.length > 1 && it.startsWith("0")) }) return null
@@ -208,6 +223,12 @@ private fun Checklists(modifier: Modifier = Modifier) {
 @Composable
 private fun GuidedCase(modifier: Modifier = Modifier) {
     var issue by remember { mutableStateOf("Connectivity problem") }
+    val caseTypes = listOf(
+        "Connectivity problem" to "Check link state, IP configuration, gateway reachability and DNS separately.",
+        "Account access" to "Verify identity using approved procedures; check account state and service status. Never request a password.",
+        "Slow computer" to "Capture when it started; compare CPU, memory and disk activity; check storage and approved updates.",
+        "Email issue" to "Check scope, service status, connectivity, mailbox symptoms and any exact error message."
+    )
     var impact by remember { mutableStateOf("") }
     var report by remember { mutableStateOf("") }
     var checks by remember { mutableStateOf("") }
@@ -225,6 +246,15 @@ private fun GuidedCase(modifier: Modifier = Modifier) {
     Column(modifier.fillMaxSize().padding(16.dp)) {
         Text("Guided support case", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text("Work through the facts before deciding what the problem is. A clear handover saves the next person from starting again.")
+        Text("Choose a starting point", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            caseTypes.forEach { (name, _) ->
+                FilterChip(selected = issue == name, onClick = { issue = name }, label = { Text(name) })
+            }
+        }
+        caseTypes.firstOrNull { it.first == issue }?.second?.let {
+            Card { Text(it, modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium) }
+        }
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(issue, { issue = it }, label = { Text("What are you investigating?") }, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(impact, { impact = it }, label = { Text("Who or what is affected?") }, modifier = Modifier.fillMaxWidth())
@@ -235,10 +265,15 @@ private fun GuidedCase(modifier: Modifier = Modifier) {
         Text("Handover preview", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Card(Modifier.fillMaxWidth()) { Text(handover, modifier = Modifier.padding(12.dp)) }
         Spacer(Modifier.height(8.dp))
-        Button(onClick = {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = {
+                issue = "Connectivity problem"; impact = ""; report = ""; checks = ""; nextAction = ""
+            }, modifier = Modifier.weight(1f)) { Text("Clear case") }
+            Button(onClick = {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Support handover", handover))
-        }, modifier = Modifier.fillMaxWidth()) { Text("Copy handover summary") }
+        }, modifier = Modifier.weight(1f)) { Text("Copy handover") }
+        }
         Text("Review the summary before sharing. Do not include passwords, verification codes or confidential details.", style = MaterialTheme.typography.bodySmall)
     }
 }
