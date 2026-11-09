@@ -47,7 +47,7 @@ private fun ToolkitApp() {
                         NavigationBarItem(
                             selected = section == item,
                             onClick = { section = item },
-                            icon = { Text(when(item) { Section.HOME -> "⌂"; Section.NETWORK -> "⌘"; Section.CHECKLISTS -> "✓"; Section.NOTES -> "▤" }) },
+                            icon = { Text(when(item) { Section.HOME -> "⌂"; Section.NETWORK -> "⌘"; Section.CHECKLISTS -> "✓"; Section.CASES -> "◎"; Section.NOTES -> "▤" }) },
                             label = { Text(item.label) }
                         )
                     }
